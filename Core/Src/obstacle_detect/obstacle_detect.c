@@ -162,7 +162,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 			switch(lidar->pos) // Self Pose
 			{
 				case PICK_LEFT:
-					vesc_duty = 0.18;
+					vesc_duty = 0.165;
 					ResetCoordinate();
 					PP_start(pick_left_adjust, 1, &pp);
 					while(pp.pp_start)
@@ -224,7 +224,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_2:
-					vesc_duty = 0.175;
+					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER_1;
 					PP_start(center_2_to_center_1, 1, &pp);
@@ -282,7 +282,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_1:
-					vesc_duty = 0.29;
+					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_2;
 					PP_start(center_1_to_center_2, 1, &pp);
@@ -319,7 +319,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER:
-					vesc_duty = 0.29;
+					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_2;
 					PP_start(center_to_center_2, 1, &pp);
@@ -380,7 +380,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_2:
-					vesc_duty = 0.17;
+					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER;
 					PP_start(center_2_to_center, 1, &pp);
@@ -417,7 +417,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_3:
-					vesc_duty = 0.17;
+					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER;
 					PP_start(center_3_to_center, 1, &pp);
@@ -478,7 +478,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER:
-					vesc_duty = 0.295;
+					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_3;
 					PP_start(center_to_center_3, 1, &pp);
@@ -515,7 +515,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_4:
-					vesc_duty = 0.295;
+					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_3;
 					PP_start(center_4_to_center_3, 1, &pp);
@@ -576,7 +576,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_3:
-					vesc_duty = 0.175;
+					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER_4;
 					PP_start(center_3_to_center_4, 1, &pp);
