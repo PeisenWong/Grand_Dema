@@ -1,0 +1,8 @@
+laser.c:35:6:LaserInit	40	static
+laser.c:62:6:LaserUpdate_min_value	16	static
+laser.c:75:6:LaserUpdate_max_value	16	static
+laser.c:88:6:LaserUpdate_min_distance	16	static
+laser.c:101:6:LaserUpdate_max_distance	16	static
+laser.c:113:6:LaserUpdate_ratio	16	static
+laser.c:132:6:Laser	16	static
+laser.c:151:6:Chk_Laser_Dis	24	static

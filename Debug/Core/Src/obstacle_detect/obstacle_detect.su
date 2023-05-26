@@ -1,0 +1,13 @@
+obstacle_detect.c:43:6:LidarInit	24	static
+obstacle_detect.c:71:6:LidarOffsetInit	40	static
+obstacle_detect.c:82:6:LidarCenterOffsetInit	48	static
+obstacle_detect.c:97:6:LidarAnglesInit	56	static
+obstacle_detect.c:115:6:LidarSetPos	392	static
+obstacle_detect.c:704:6:LidarSetAngle	216	static
+obstacle_detect.c:894:6:LidarAdjust	56	static
+obstacle_detect.c:979:6:LidarAdjustPP	56	static
+obstacle_detect.c:1003:6:LidarControl	16	static
+obstacle_detect.c:1039:6:LidarCheckAngle	16	static
+obstacle_detect.c:1064:6:LidarCheckPos	16	static
+obstacle_detect.c:1106:6:LidarSendIns	16	static
+obstacle_detect.c:1124:6:ObstacleHandler	40	static
