@@ -114,6 +114,9 @@ void RobotStart()
 	wait_load = 0;
 	wheel = 1;
 	loaded = 0;
+	led_enb = 0;
+	stick_fence = 0;
+	pick_0 = 0;
 }
 
 void NormalControl()
@@ -122,23 +125,7 @@ void NormalControl()
 	if (ps4.button == OPTION)
 	{
 		while (ps4.button == OPTION);
-//		setPick(0);
-		static int counter = 0;
-		counter++;
-
-		if(counter == 1)
-		{
-			vesc_duty = 0.405;
-		}
-		else if(counter == 2)
-		{
-			vesc_duty = 0.295;
-		}
-		else if(counter == 3)
-		{
-			vesc_duty = 0.175;
-			counter = 0;
-		}
+		ResetPickEnc();
 	}
 
 	// Cylinder
@@ -209,6 +196,8 @@ void NormalControl()
 			VESCStop(&vesc2);
 			counter = 0;
 		}
+//		setPick(800);
+//		open_servo;
 	}
 
 	if(ps4.button == RIGHT)
@@ -226,7 +215,12 @@ void NormalControl()
 //			pick_right = 1;
 
 		pick_left = 1;
+	}
 
+	if(ps4.button == DOWN)
+	{
+		while(ps4.button == DOWN);
+		stick_fence = 0;
 	}
 
 	if (HAL_GetTick() - before >= NormalMode) {
@@ -244,7 +238,35 @@ void Auto() {
 //		else
 //			lidar.AdjEnb = 1;
 //		ResetCoordinate();
-		ResetPickEnc();
+//		ResetPickEnc();
+		static int counter = 0;
+		counter++;
+
+		if(counter == 1)
+		{
+			led_enb = 0;
+			vesc_duty = 0.375;
+			led8 = 1;
+		}
+		else if(counter == 2)
+		{
+			led_enb = 1;
+			shot_prd = 125;
+			vesc_duty = 0.275;
+		}
+		else if(counter == 3)
+		{
+			led_enb = 1;
+			shot_prd = 500;
+			vesc_duty = 0.39;
+		}
+		else if(counter == 4)
+		{
+			led_enb = 0;
+			vesc_duty = 0.165;
+			led8 = 0;
+			counter = 0;
+		}
 	}
 
 	// Shoot
@@ -260,6 +282,9 @@ void Auto() {
 	{
 		while(ps4.button == SQUARE);
 //		PP_stop(&pp);
+		setPick(500);
+		open_servo;
+		stick_fence = 0;
 	}
 
 	if(ps4.button == CIRCLE)
@@ -435,9 +460,17 @@ void CheckPick()
 
 	if(pick_right)
 	{
+		load_stop_once = 0;
+		loaded = 0;
+
+		pick_0 = 1;
+		pick_manual(-10000);
+
+		lidar.pos = PICK_RIGHT;
+		lidar.pos_counter = PICK_RIGHT;
 		// Stick to fence
-		setPick(0);
-		open_servo
+//		setPick(0);
+		open_servo;
 		pick_right = 0;
 		float stick_fence_right[1][7] = {{2.0, 5, 0, pp.real_z, 0, 0, 0}};
 		PP_start(stick_fence_right, 1, &pp);
@@ -470,21 +503,26 @@ void CheckPick()
 		}
 
 		if(picked_right)
+		{
 			LoadRing();
+			lidar.pos_counter = CENTER_4;
+			osDelay(500);
+			close_servo;
+		}
 	}
 }
 
 void CheckShoot()
 {
-	if(In_ShotReady)
-		led2 = 1;
-	else
-		led2 = 0;
-
-	if(In_ShotDone)
-		led3 = 1;
-	else
-		led3 = 0;
+//	if(In_ShotReady)
+//		led2 = 1;
+//	else
+//		led2 = 0;
+//
+//	if(In_ShotDone)
+//		led3 = 1;
+//	else
+//		led3 = 0;
 
 	if(shoot_start && In_ShotDone)
 	{
@@ -533,9 +571,10 @@ void CheckLoad()
 			pick_stop;
 			osDelay(200);
 			pick_manual(5000);
+//			close_servo;
 			load_stop_once = 1;
 		}
-		if(pick_enc >= 17000)
+		if(pick_enc >= 16500)
 		{
 			load_start = 0;
 			reload = 0;
@@ -563,6 +602,21 @@ void CheckLoad()
 
 	if(loaded >= 10)
 		loaded = 0;
+}
+
+void CheckPick0()
+{
+	if(In_Pick_0)
+		led3 = 1;
+	else
+		led3 = 0;
+
+	if(pick_0 && In_Pick_0)
+	{
+		pick_0 = 0;
+		pick_stop;
+	}
+
 }
 
 void Checking()

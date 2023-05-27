@@ -167,24 +167,27 @@ void MainTask(void *argument) {
 void NaviTask(void *argument) {
 	while (1) {
 
-		if(!set_pitch)
-		{
-			if (ps4.button == UP)
-			{
-				pitch_up;
-			}
-			else if (ps4.button == DOWN)
-			{
-				pitch_down;
-			}
-			else
-			{
-				pitch_stop;
-			}
-		}
+//		if(!set_pitch)
+//		{
+//			if (ps4.button == UP)
+//			{
+//				pitch_up;
+//			}
+//			else if (ps4.button == DOWN)
+//			{
+//				pitch_down;
+//			}
+//			else
+//			{
+//				pitch_stop;
+//			}
+//		}
 
 		if(!load_start && !set_pick_enc && !reload)
 			pick_manual(ps4.joyR_y * 14000);
+
+//		if(stick_fence && MODN.x_vel == 0.0 && MODN.y_vel == 0.0)
+//			RNSVelocity(0.25, 0.25, 0.25, 0.25, &rns);
 
 		enq();
 		pick_enc = QEIRead(QEI1);
@@ -254,6 +257,15 @@ void CheckingTask(void *argument)
 		{
 			led7_off;
 		}
+
+		if(led_enb)
+		{
+			if (HAL_GetTick() - before_shot >= shot_prd)
+			{
+				led8 = !led8;
+				before_shot = HAL_GetTick();
+			}
+		}
 	}
 }
 
@@ -268,8 +280,7 @@ void EmergencyTask(void *argument) {
 			pitch_stop;
 			pick_stop;
 			push_stop;
-			setPick(3000);
-			open_servo;
+			ResetPickEnc();
 			osThreadTerminate(MainTaskHandle);
 			osDelay(5);
 

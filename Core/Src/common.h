@@ -65,6 +65,7 @@
 #define In_LS_Right_2	IP10 == 0
 #define In_LS_Shot_1	IP11 == 0
 #define In_LS_Shot_2	IP12 == 0
+#define In_Pick_0		IP13 == 0
 
 // Actuator
 #define cylinder_load		SR.cast[1].bit6 = 1;  // BDC1

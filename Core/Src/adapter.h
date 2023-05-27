@@ -178,8 +178,7 @@ PID_t pick_PID;
 #define led7_on 	__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 19999); // BDC 6
 #define led7_off 	__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
 #define led9		SR.cast[0].bit4
-#define led8_on 	SR.cast[0].bit5 = 1;
-#define led8_off 	SR.cast[0].bit5 = 0;
+#define led8		SR.cast[0].bit5
 
 //Global Declarations
 float v1, v2, v3, v4, wa, xr, yr;                 //MODN variables
@@ -201,8 +200,10 @@ float fx_accel, fy_accel, fz_accel, roll, pitch, yaw;
 float moveSpeed, vesc_duty;
 int mode, before;
 int shoot_start, shoot_done, load_start, pick_start, set_pitch, pick_left, pick_right, set_pick_enc, vel_adjust, reload, load_stop_once, wait_load;
-int picked_left, picked_right, loaded, servo_close_once;
+int picked_left, picked_right, loaded, servo_close_once, stick_fence;
 int tune_p, tune_i, tune_d, wheel;
+int led_enb, before_shot, shot_prd;
+int pick_0;
 
 float fXEncData, fYEncData;
 float fXPos, fYPos;			/* Position, ABT output, pos PID feedback */

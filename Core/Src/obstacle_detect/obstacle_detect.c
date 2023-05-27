@@ -18,10 +18,10 @@
 
 /*
  *  Type 1 (Center): 0.17
- *  Type 1 (Center 4): 0.175
+ *  Type 1 (Center 4): 0.165
  *  Type 2(Center 3): 0.295
  *  Type 2(Center 2): 0.29
- *  Type 1(Center 1): 0.175
+ *  Type 1(Center 1): 0.165
  *
  *  Center 1: X: -0.19 Y: 0.94
  *  Center 2: X: 1.23 Y: 0.96
@@ -115,20 +115,31 @@ void LidarAnglesInit(float left_angle_A, float left_angle_B, float left_angle_C,
 void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 {
 	// Pick Left
-	float pick_left_adjust[1][7] = {{2.0, 2.23, 0.70, 0, 0, 0, 0}};
+	float pick_left_adjust[1][7] = {{2.5, 2.26, 0.75, 0, 0, 0, 0}};
 	float pick_left_adjust_2[1][7] = {{1.0, 0, 0, -90, 0, 0, 0}};
+	float bang_fence[1][7] = {{1.5, 0, 10, pp.real_z, 0, 0, 0}};
 
-	float bang_fence[1][7] = {{1.2, 0, 10, pp.real_z, 0, 0, 0}};
+	// Only offset 1 pole
 	float pick_left_to_center_1[1][7] = {{1.0, 0, 10, -90, 0, 0, 0}};
-	float center_1_to_center_2[1][7] = {{2.0, 1.86, 0, pp.real_z, 1, 0, 0}};
-	float center_2_to_center_1[1][7] = {{2.0, -1.86, 0, pp.real_z, 1, 0, 0}};
-	float center_2_to_center[1][7] = {{2.0, 1.33, 0, pp.real_z, 1, 0, 0}};
-	float center_to_center_2[1][7] = {{2.0, -1.33, 0, pp.real_z, 1, 0, 0}};
-	float center_to_center_3[1][7] = {{2.0, 1.25, 0, pp.real_z, 1, 0, 0}};
-	float center_3_to_center[1][7] = {{2.0, -1.25, 0, pp.real_z, 1, 0, 0}};
-	float center_3_to_center_4[1][7] = {{2.0, 1.95, 0, pp.real_z, 1, 0, 0}};
-	float center_4_to_center_3[1][7] = {{2.0, -1.95, 0, pp.real_z, 1, 0, 0}};
-	float center_4_to_pick_right[1][7] = {{2.0, 2, 0, pp.real_z, 1, 0, 0}};
+	float center_1_to_center_2[1][7] = {{2.0, 1.76, 0, pp.real_z, 1, 0, 0}};
+	float center_2_to_center_1[1][7] = {{2.0, -1.76, 0, pp.real_z, 1, 0, 0}};
+	float center_2_to_center[1][7] = {{2.0, 1.25, 0, pp.real_z, 1, 0, 0}};
+	float center_to_center_2[1][7] = {{2.0, -1.34, 0, pp.real_z, 1, 0, 0}};
+	float center_to_center_3[1][7] = {{2.0, 1.20, 0, pp.real_z, 1, 0, 0}};
+	float center_3_to_center[1][7] = {{2.0, -1.20, 0, pp.real_z, 1, 0, 0}};
+	float center_3_to_center_4[1][7] = {{2.0, 1.86, 0, pp.real_z, 1, 0, 0}};
+	float center_4_to_center_3[1][7] = {{2.0, -1.87, 0, pp.real_z, 1, 0, 0}};
+
+	// Offset 2 poles
+	float center_1_to_center[1][7] = {{2.0, 2.96, 0, pp.real_z, 1, 0, 0}};
+	float center_to_center_1[1][7] = {{2.0, -3.07, 0, pp.real_z, 1, 0, 0}};
+	float center_to_center_4[1][7] = {{2.0, 3.06, 0, pp.real_z, 1, 0, 0}};
+	float center_4_to_center[1][7] = {{2.0, -3.06, 0, pp.real_z, 1, 0, 0}};
+	float center_2_to_center_3[1][7] = {{2.0, 2.4, 0, pp.real_z, 1, 0, 0}};
+	float center_3_to_center_2[1][7] = {{2.0, -2.4, 0, pp.real_z, 1, 0, 0}};
+
+	float pick_right_to_center_4_servo[1][7] = {{4.0, 0, 0.5, -90, 0, 0, 0}};
+	float pick_right_to_center_4[1][7] = {{2.5, -2.4, 0.2, -90, 1, 0, 0}};
 
 	switch(pose) // Target Pose
 	{
@@ -162,16 +173,12 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 			switch(lidar->pos) // Self Pose
 			{
 				case PICK_LEFT:
+					stick_fence = 0;
 					vesc_duty = 0.165;
 					ResetCoordinate();
 					PP_start(pick_left_adjust, 1, &pp);
 					while(pp.pp_start)
 					{
-//						if(pp.real_x >= 0.15 && !servo_close_once)
-//						{
-//							close_servo;
-//							servo_close_once = 1;
-//						}
 						if(ps4.button == SQUARE)
 						{
 							while(ps4.button == SQUARE);
@@ -205,6 +212,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 							PP_stop(&pp);
 					}
 //					Shot();
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
@@ -224,6 +232,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_2:
+					stick_fence = 0;
 					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER_1;
@@ -251,6 +260,43 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
+					break;
+
+				case CENTER:
+					stick_fence = 0;
+					vesc_duty = 0.165;
+					ResetCoordinate();
+					lidar->pos = CENTER_1;
+					PP_start(center_to_center_1, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = CENTER; // PP Failed
+							lidar->pos_counter = CENTER;
+						}
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
@@ -282,6 +328,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_1:
+					stick_fence = 0;
 					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_2;
@@ -312,6 +359,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
@@ -319,6 +367,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER:
+					stick_fence = 0;
 					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_2;
@@ -349,11 +398,47 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
 						LidarAdjust(lidar);
 					break;
+
+				case CENTER_3:
+					stick_fence = 0;
+					vesc_duty = 0.27;
+					ResetCoordinate();
+					lidar->pos = CENTER_2;
+					PP_start(center_3_to_center_2, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = CENTER_3; // PP Failed
+							lidar->pos_counter = CENTER_3;
+						}
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
 
 				default:
 					break;
@@ -379,7 +464,45 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					lidar->pos = CENTER;
 					break;
 
+				case CENTER_1:
+					stick_fence = 0;
+					vesc_duty = 0.165;
+					ResetCoordinate();
+					lidar->pos = CENTER;
+					PP_start(center_1_to_center, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = CENTER_1; // PP Failed
+							lidar->pos_counter = CENTER_1;
+						}
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
+					break;
+
+
 				case CENTER_2:
+					stick_fence = 0;
 					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER;
@@ -410,6 +533,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
@@ -417,6 +541,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_3:
+					stick_fence = 0;
 					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER;
@@ -447,11 +572,47 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
 						LidarAdjust(lidar);
 					break;
+
+				case CENTER_4:
+					stick_fence = 0;
+					vesc_duty = 0.165;
+					ResetCoordinate();
+					lidar->pos = CENTER;
+					PP_start(center_4_to_center, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = CENTER_4; // PP Failed
+							lidar->pos_counter = CENTER_4;
+						}
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
 
 				default:
 					break;
@@ -478,6 +639,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER:
+					stick_fence = 0;
 					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_3;
@@ -508,13 +670,52 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
 						LidarAdjust(lidar);
 					break;
 
+				case CENTER_2:
+					stick_fence = 0;
+					vesc_duty = 0.27;
+					ResetCoordinate();
+					lidar->pos = CENTER_3;
+					PP_start(center_2_to_center_3, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = CENTER_2; // PP Failed
+							lidar->pos_counter = CENTER_2;
+						}
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
+					break;
+
+
 				case CENTER_4:
+					stick_fence = 0;
 					vesc_duty = 0.27;
 					ResetCoordinate();
 					lidar->pos = CENTER_3;
@@ -545,6 +746,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
@@ -563,8 +765,91 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					lidar->pos = CENTER_4;
 					break;
 
-				case PICK_RIGHT:
+				case CENTER:
+					stick_fence = 0;
+					vesc_duty = 0.165;
+					ResetCoordinate();
 					lidar->pos = CENTER_4;
+					PP_start(center_to_center_4, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = CENTER; // PP Failed
+							lidar->pos_counter = CENTER;
+						}
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
+
+				case PICK_RIGHT:
+					stick_fence = 0;
+					vesc_duty = 0.165;
+					ResetCoordinate();
+					lidar->pos = CENTER_4;
+
+					PP_start(pick_right_to_center_4_servo, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = PICK_RIGHT;
+							lidar->pos_counter = PICK_RIGHT;
+						}
+					}
+
+					PP_start(pick_right_to_center_4, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+							lidar->pos = PICK_RIGHT;
+							lidar->pos_counter = PICK_RIGHT;
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							pp.error_y = 0;
+					}
+
+					PP_start(bang_fence, 1, &pp);
+					while(pp.pp_start)
+					{
+						if(ps4.button == SQUARE)
+						{
+							while(ps4.button == SQUARE);
+							PP_stop(&pp);
+						}
+
+						if(In_LS_Shot_1 && In_LS_Shot_2)
+							PP_stop(&pp);
+					}
+					stick_fence = 1;
+
+					// Only adjust after reached destination
+					if(lidar->pos == pose)
+						LidarAdjust(lidar);
 					break;
 
 				case UPPER_LEFT:
@@ -576,6 +861,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 					break;
 
 				case CENTER_3:
+					stick_fence = 0;
 					vesc_duty = 0.165;
 					ResetCoordinate();
 					lidar->pos = CENTER_4;
@@ -606,6 +892,7 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 						if(In_LS_Shot_1 && In_LS_Shot_2)
 							PP_stop(&pp);
 					}
+					stick_fence = 1;
 
 					// Only adjust after reached destination
 					if(lidar->pos == pose)
@@ -646,20 +933,6 @@ void LidarSetPos(Pos_t pose, Lidar_t* lidar)
 			switch(lidar->pos)
 			{
 				case UPPER_RIGHT:
-					ResetCoordinate();
-					lidar->pos = PICK_RIGHT;
-					PP_start(center_4_to_pick_right, 1, &pp);
-					while(pp.pp_start)
-					{
-						if(ps4.button == SQUARE)
-						{
-							while(ps4.button == SQUARE);
-							PP_stop(&pp);
-							lidar->pos = UPPER_RIGHT;
-							lidar->pos_counter = UPPER_RIGHT;
-						}
-					}
-					pick_right = 1;
 					break;
 
 				case CENTER_1:
@@ -1017,23 +1290,17 @@ void LidarControl(Lidar_t* lidar)
 	if(ps4.button == UP)
 	{
 		while(ps4.button == UP);
-		lidar->angle_counter++;
+		lidar->pos_counter += 2;
 	}
 
 	if(ps4.button == DOWN)
 	{
 		while(ps4.button == DOWN);
-		lidar->angle_counter--;
-	}
-
-	if(ps4.button == SQUARE)
-	{
-		while(ps4.button == SQUARE);
-		lidar->angle_counter = PICK_RIGHT;
+		lidar->pos_counter -= 2;
 	}
 
 	LidarCheckPos(lidar);
-	LidarCheckAngle(lidar);
+//	LidarCheckAngle(lidar);
 }
 
 void LidarCheckAngle(Lidar_t* lidar)
