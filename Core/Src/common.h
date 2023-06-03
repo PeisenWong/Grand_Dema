@@ -26,8 +26,8 @@
 #define NormalMode 500
 #define AutoMode 125
 #define PoleSpeed 6.5
-#define BluePickMore 190
-#define RedPickMore 230
+#define BluePickMore 180
+#define RedPickMore 154
 
 // Speed
 #define type1 4.7

@@ -346,6 +346,7 @@ void NormalControl()
 			LoadRing();
 			close_servo;
 			lidar.pos_counter = CENTER_1;
+			AdjustRings();
 //			osDelay(500);
 			setSpeedMODN(5.5);
 		}
@@ -514,6 +515,8 @@ void Auto() {
 		else
 		{
 			counter = 0;
+			lidar.pos = POS_PENDING;
+			lidar.pos_counter = POS_PENDING;
 			pick_right = 1;
 			cylinder_retract;
 		}
@@ -527,6 +530,7 @@ void Auto() {
 		adjust_servo;
 		load_adjust = 1;
 		cylinder_retract;
+		AdjustRings();
 	}
 
 	if (HAL_GetTick() - before >= AutoMode)
@@ -891,11 +895,11 @@ void CheckLoad()
 	if(reload)
 		pick_manual(5000);
 
-//	if(loaded >= 7)
-//	{
-//		adjust_servo;
-//		load_adjust = 0;
-//	}
+	if(loaded >= 7)
+	{
+		adjust_servo;
+		load_adjust = 0;
+	}
 
 //	if(loaded >= 8)
 //	{
