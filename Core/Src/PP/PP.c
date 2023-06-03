@@ -21,12 +21,12 @@ void PPInit(uint8_t base,float *qeix, float *qeiy, float*imu,PathPlan_t *pp)
 	PIDDelayInit(&(pp->z));
 
 	pp->tol_xy=0.20;
-	pp->tol_z=2.0;
+	pp->tol_z=5.0;
 
 	pp->tol_xy_crv= 0.6;
 
 	pp->f_tol_xy=0.06;
-	pp->f_tol_z=1.0;
+	pp->f_tol_z=5.0;
 
 	pp->yaw_offset=*(pp->yaw);
 	pp->prev_real_z = 0;

@@ -602,4 +602,11 @@ typedef struct
 
 Info info;
 
+typedef struct
+{
+	float rpm;
+	float duty;
+	float current;
+}INFO;
+
 #endif /* VESC_CAN_DATATYPES_H_ */

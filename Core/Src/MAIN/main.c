@@ -96,8 +96,11 @@ void TIM6_DAC_IRQHandler(void) {
 //	//				lidar.pos_counter, pp.error_x, pp.error_y, pp.real_x, pp.real_y, pp.real_z, pick_enc);
 //	//		sprintf((char*)debug, "VESC: %f\n", vesc_duty);
 //		}
-		sprintf((char*) debug, "X: %.2f Y: %.2f Yaw: %.2f LX: %.2lf LY: %.2lf LAx: %.2f LAy: %.2f VESC: %.3f\n",
-				pp.real_x, pp.real_y, pp.real_z, lidar.pole.x, lidar.pole.y, lidar.adj_x, lidar.adj_y, vesc_duty);
+
+		sprintf((char*) debug, "X: %.2f Y: %.2f Yaw: %.2f VESC: %.4f P: %ld\n",
+				pp.real_x, pp.real_y, pp.real_z, vesc_duty, pick_enc);
+//		sprintf((char*) debug, "Left: %.2f Right: %.2f VESC: %.2f\n",
+//				vesc1.vel, vesc2.vel, vesc_speed);
 		HAL_UART_Transmit(&huart5, debug, strlen((char*) debug), HAL_MAX_DELAY);
 	}
 
@@ -109,6 +112,22 @@ void TIM6_DAC_IRQHandler(void) {
 //
 //	fyaw = (fyaw >= 0.0) ? fyaw : 360.0 + fyaw;
 //	enq();
+
+	// Speed PID
+//	vesc1.vel = VESC_calVel(vesc1.Info.rpm);
+//	vesc2.vel = VESC_calVel(vesc2.Info.rpm);
+//
+//	if(fabs(vesc_speed - vesc1.vel) < 0.05 && fabs(vesc_speed - vesc2.vel) < 0.05)
+//	{
+//		led5_on;
+//	}
+//	else
+//	{
+//		led5_off;
+//	}
+//
+//	flywheelPID(vesc_speed);
+//	flywheelAct();
 
 	PathPlan(&pp);
 	CheckPickEnc();
@@ -135,13 +154,17 @@ void MainTask(void *argument) {
 		if(ps4.button == L1)
 		{
 			while(ps4.button == L1);
-			vesc_duty += 0.005;
+			vesc_speed += 0.05;
+			vesc_duty += 0.0025;
+//			ServoMovePulse(&servo_ring, 10);
 		}
 
 		if(ps4.button == R1)
 		{
 			while(ps4.button == R1);
-			vesc_duty -= 0.005;
+			vesc_speed -= 0.05;
+			vesc_duty -= 0.0025;
+//			ServoMovePulse(&servo_ring, -10);
 		}
 
 		switch (mode)
@@ -186,14 +209,18 @@ void NaviTask(void *argument) {
 		if(!load_start && !set_pick_enc && !reload)
 			pick_manual(ps4.joyR_y * 14000);
 
-//		if(stick_fence && MODN.x_vel == 0.0 && MODN.y_vel == 0.0)
+		VESCPDC(vesc_duty, &vesc1);
+		VESCPDC(vesc_duty, &vesc2);
+
+//		CheckPick0();
+
+//		if(stick_fence && MODN.x_vel == 0.0 && MODN.y_vel == 0.0 && !In_LS_Shot_1 && !In_LS_Shot_2)
 //			RNSVelocity(0.25, 0.25, 0.25, 0.25, &rns);
+//		else if(stick_fence && In_LS_Shot_1 && In_LS_Shot_2)
+//			RNSStop(&rns);
 
 		enq();
 		pick_enc = QEIRead(QEI1);
-
-		VESCPDC(vesc_duty, &vesc1);
-		VESCPDC(vesc_duty, &vesc2);
 
 		if(!pp.pp_start && !vel_adjust)
 		{
@@ -222,7 +249,16 @@ void CheckingTask(void *argument)
 	{
 		Checking();
 
-		if(In_LS_Shot_1 && In_LS_Shot_2)
+//		if(In_LS_Shot_1 && In_LS_Shot_2)
+//		{
+//			led4_on;
+//		}
+//		else
+//		{
+//			led4_off;
+//		}
+
+		if(blue)
 		{
 			led4_on;
 		}
@@ -231,14 +267,14 @@ void CheckingTask(void *argument)
 			led4_off;
 		}
 
-		if(In_LS_Left_1 && In_LS_Left_2)
-		{
-			led5_on;
-		}
-		else
-		{
-			led5_off;
-		}
+//		if(In_LS_Left_1 && In_LS_Left_2)
+//		{
+//			led5_on;
+//		}
+//		else
+//		{
+//			led5_off;
+//		}
 
 		if(In_Load)
 		{
@@ -249,14 +285,14 @@ void CheckingTask(void *argument)
 			led6_off;
 		}
 
-		if(In_Pick)
-		{
-			led7_on;
-		}
-		else
-		{
-			led7_off;
-		}
+//		if(In_Pick)
+//		{
+//			led7_on;
+//		}
+//		else
+//		{
+//			led7_off;
+//		}
 
 		if(led_enb)
 		{
@@ -279,8 +315,10 @@ void EmergencyTask(void *argument) {
 			PP_stop(&pp);
 			pitch_stop;
 			pick_stop;
+//			flywheelStop();
 			push_stop;
-			ResetPickEnc();
+			vesc_duty = 0.0;
+//			ResetPickEnc();
 			osThreadTerminate(MainTaskHandle);
 			osDelay(5);
 

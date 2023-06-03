@@ -148,3 +148,11 @@ void bldc_send_packet(uint8_t controller_id, uint8_t *data, unsigned int len) {
 	comm_can_send_buffer(controller_id, data, len, 0);
 }
 
+float VESC_calVel(float rpm)
+{
+	float vel;
+//	rpm /= (MCCONF_SI_MOTOR_POLES / 2);
+	vel = (((rpm / (14 / 2.0)) * 1) * (M_PI * 0.127)) / 60;
+	return vel;
+}
+

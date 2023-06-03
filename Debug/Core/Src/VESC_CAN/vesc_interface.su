@@ -6,3 +6,4 @@ vesc_interface.c:88:6:VESCPDC	16	static
 vesc_interface.c:107:6:VESCStop	16	static
 vesc_interface.c:134:11:VESCEnquire	24	static
 vesc_interface.c:147:6:bldc_send_packet	24	static
+vesc_interface.c:151:7:VESC_calVel	24	static

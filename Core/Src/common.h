@@ -25,6 +25,27 @@
 // Blinking hz for modes
 #define NormalMode 500
 #define AutoMode 125
+#define PoleSpeed 6.5
+#define BluePickMore 190
+#define RedPickMore 230
+
+// Speed
+#define type1 4.7
+#define BlueType2 8.15
+#define RedType2 8.2
+#define BlueType3 11.75
+#define RedType3 11.7
+#define RedOppoType2 12.2
+#define BlueOppoType2 12.3
+
+// Duty
+#define type1Duty 0.17
+#define BlueType2Duty 0.275
+#define RedType2Duty 0.27
+#define BlueType3Duty 0.375
+#define RedType3Duty  0.375
+#define BlueOppoType2Duty  0.39
+#define RedOppoType2Duty   0.39
 
 #define SAMPLE_TIME 0.005f
 
@@ -73,12 +94,13 @@
 #define pitch_up			WriteBDC(&BDC3, -19999);
 #define pitch_down			WriteBDC(&BDC3, 19999);
 #define pitch_stop			WriteBDC(&BDC3, 0);
-#define push_shoot			WriteBDC(&BDC4, -19999);
-#define push_return			WriteBDC(&BDC4, 19999);
+#define push_shoot			WriteBDC(&BDC4, 19999);
+#define push_return			WriteBDC(&BDC4, -19999);
 #define push_stop			WriteBDC(&BDC4, 0);
 #define open_servo			ServoSetPulse(&servo_ring, 2300); // BDC7
-#define close_servo			ServoSetPulse(&servo_ring, 930);
-#define adjust_servo		ServoSetPulse(&servo_ring, 970);
+#define close_servo			ServoSetPulse(&servo_ring, 850);
+#define load_adjust_servo	ServoSetPulse(&servo_ring, 1100);
+#define adjust_servo		ServoSetPulse(&servo_ring, 950);
 #define pick_up				WriteBDC(&BDC2, 19999);
 #define pick_down			WriteBDC(&BDC2, -19999);
 #define pick_stop			WriteBDC(&BDC2, 0);
@@ -191,6 +213,11 @@ void setPick(int32_t target);
 void CheckPickEnc(void);
 void CheckLoad();
 void CheckShoot();
+void CheckPick0();
+void flywheelStop();
+void flywheelAct();
+void AdjustRings(void);
+void flywheelPID(float speed);
 void Shot();
 void CheckPitch();
 void tune(void);

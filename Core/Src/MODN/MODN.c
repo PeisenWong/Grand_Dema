@@ -40,7 +40,7 @@ void MODNInit(RobotBaseType_t base, float speed, float turnSpeed, float angleTol
 	MODN.radTol = angleTol/180.0*3.14159265359;
 	MODN.imuGain = speed*imuGain/MODN.radTol;
 	MODN.radTarget = 0.0;
-	MODN.orientation = 0;
+	MODN.orientation = OPERATOR_TURNED_0_DEGREE;
 	MODN.real_x_vel = &(MODN.x_vel);
 	MODN.real_y_vel = &(MODN.y_vel);
 }
@@ -99,8 +99,26 @@ void LegacyMODN(PSxBT_t *psx, RNS_interface_t* rns)
 
 void realMODN(PSxBT_t *psx, RNS_interface_t* rns)
 {
-	MODN.x_vel = -(psx->joyL_x) * MODN.speed;
-	MODN.y_vel =  (psx->joyL_y) * MODN.speed;
+	switch(MODN.orientation)
+	{
+		case OPERATOR_TURNED_0_DEGREE:
+			MODN.x_vel = -(psx->joyL_x) * MODN.speed;
+			MODN.y_vel =  (psx->joyL_y) * MODN.speed;
+			break;
+		case OPERATOR_TURNED_90_DEGREES_CLOCKWISE:
+			MODN.x_vel =  psx->joyL_y * MODN.speed;
+			MODN.y_vel =  psx->joyL_x * MODN.speed;
+			break;
+		case OPERATOR_TURNED_180_DEGREES:
+			MODN.x_vel =  psx->joyL_x * MODN.speed;
+			MODN.y_vel = -psx->joyL_y * MODN.speed;
+			break;
+		case OPERATOR_TURNED_90_DEGREES_ANTICLOCKWISE:
+			MODN.x_vel = -psx->joyL_y * MODN.speed;
+			MODN.y_vel = -psx->joyL_x * MODN.speed;
+			break;
+	}
+
 	MODN.w_vel = ((psx->joyR_2) - (psx->joyL_2))* MODN.speed;
 	if(MODN.x_vel==0.0 && MODN.y_vel==0.0 && MODN.w_vel==0.0){
 		if(rns->RNS_data.common_instruction != RNS_BUSY)

@@ -10,6 +10,8 @@ typedef struct{
 	float pole_pairs;
 	float wheel_diameter;
 	uint16_t Instance;
+	INFO Info;
+	float vel;
 
 	union{
 		uint8_t flags;
@@ -33,6 +35,7 @@ void VESCVelocity(float Velocity, VESC_t* vesc);
 void VESCRPM(float RPM, VESC_t* vesc);
 void VESCPDC(float Duty, VESC_t* vesc);
 void VESCStop(VESC_t* vesc);
+float VESC_calVel(float rpm);
 
 VESC_t vesc1, vesc2;
 

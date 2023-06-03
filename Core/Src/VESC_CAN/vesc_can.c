@@ -272,84 +272,87 @@ void comm_can_set_handbrake_rel(uint8_t controller_id, float current_rel) {
 
 void decode_VESC(void){
 	int32_t ind = 0;
-	int32_t indexbuf = 0;
-	unsigned int rxbuf_len;
-	unsigned int rxbuf_ind;
-	uint8_t crc_low;
-	uint8_t crc_high;
-	uint8_t commands_send;
+//	unsigned int rxbuf_len;
+//	unsigned int rxbuf_ind;
+//	uint8_t crc_low;
+//	uint8_t crc_high;
+//	uint8_t commands_send;
 
+//
 //	Vescmsg *rxmsg_tmp;
 //	while ((rxmsg_tmp = get_rx_frame()) != 0) {
 //		Vescmsg rxmsg = *rxmsg_tmp;
-//
-//		if (rxmsg.Rxmsg.IDE == CAN_ID_EXT) {
+
+		if (vescmsg.Rxmsg.IDE == CAN_ID_EXT) {
 			uint8_t id = vescmsg.Rxmsg.ExtId & 0xFF;
 			CAN_PACKET_ID cmd = vescmsg.Rxmsg.ExtId >> 8;
 
-			if (id == 255 || id == RNS_TO_VESC) {
-				switch (cmd) {
-				case CAN_PACKET_FILL_RX_BUFFER:
-					memcpy(rx_buffer + vescmsg.Data[0], vescmsg.Data + 1, vescmsg.Rxmsg.DLC - 1);
-					break;
-
-				case CAN_PACKET_FILL_RX_BUFFER_LONG:
-					rxbuf_ind = (unsigned int)vescmsg.Data[0] << 8;
-					rxbuf_ind |= vescmsg.Data[1];
-					if (rxbuf_ind < RX_BUFFER_SIZE) {
-						memcpy(rx_buffer + rxbuf_ind, vescmsg.Data + 2, vescmsg.Rxmsg.DLC - 2);
-					}
-					break;
-
-				case CAN_PACKET_PROCESS_RX_BUFFER:
-					ind = 0;
-					rx_buffer_last_id = vescmsg.Data[ind++];
-					commands_send = vescmsg.Data[ind++];
-					rxbuf_len = (unsigned int)vescmsg.Data[ind++] << 8;
-					rxbuf_len |= (unsigned int)vescmsg.Data[ind++];
-
-					if (rxbuf_len > RX_BUFFER_SIZE) {
-						break;
-					}
-
-					crc_high = vescmsg.Data[ind++];
-					crc_low = vescmsg.Data[ind++];
-
-					if (crc16(rx_buffer, rxbuf_len)
-							== ((unsigned short) crc_high << 8
-									| (unsigned short) crc_low)) {
-						if(commands_send==1)
-							bldc_interface_process_packet(rx_buffer, rxbuf_len);
-					}
-					break;
-
-				case CAN_PACKET_PROCESS_SHORT_BUFFER:
-					ind = 0;
-					rx_buffer_last_id = vescmsg.Data[ind++];
-					commands_send = vescmsg.Data[ind++];
-
-					if(commands_send==1)
-						bldc_interface_process_packet(rx_buffer, rxbuf_len);
-					break;
-				default:
-					break;
-				}
-			}
-			else if(id == 111)
+//			if (id == 255 || id == RNS_TO_VESC) {
+//				switch (cmd) {
+//				case CAN_PACKET_FILL_RX_BUFFER:
+//					memcpy(rx_buffer + vescmsg.Data[0], vescmsg.Data + 1, vescmsg.Rxmsg.DLC - 1);
+//					break;
+//
+//				case CAN_PACKET_FILL_RX_BUFFER_LONG:
+//					rxbuf_ind = (unsigned int)vescmsg.Data[0] << 8;
+//					rxbuf_ind |= vescmsg.Data[1];
+//					if (rxbuf_ind < RX_BUFFER_SIZE) {
+//						memcpy(rx_buffer + rxbuf_ind, vescmsg.Data + 2, vescmsg.Rxmsg.DLC - 2);
+//					}
+//					break;
+//
+//				case CAN_PACKET_PROCESS_RX_BUFFER:
+//					ind = 0;
+//					rx_buffer_last_id = vescmsg.Data[ind++];
+//					commands_send = vescmsg.Data[ind++];
+//					rxbuf_len = (unsigned int)vescmsg.Data[ind++] << 8;
+//					rxbuf_len |= (unsigned int)vescmsg.Data[ind++];
+//
+//					if (rxbuf_len > RX_BUFFER_SIZE) {
+//						break;
+//					}
+//
+//					crc_high = vescmsg.Data[ind++];
+//					crc_low = vescmsg.Data[ind++];
+//
+//					if (crc16(rx_buffer, rxbuf_len)
+//							== ((unsigned short) crc_high << 8
+//									| (unsigned short) crc_low)) {
+//						if(commands_send==1)
+//							bldc_interface_process_packet(rx_buffer, rxbuf_len);
+//					}
+//					break;
+//
+//				case CAN_PACKET_PROCESS_SHORT_BUFFER:
+//					ind = 0;
+//					rx_buffer_last_id = vescmsg.Data[ind++];
+//					commands_send = vescmsg.Data[ind++];
+//
+//					if(commands_send==1)
+//						bldc_interface_process_packet(rx_buffer, rxbuf_len);
+//					break;
+//
+//				default:
+//					break;
+//				}
+//			}
+			if(cmd == CAN_PACKET_STATUS)
 			{
-				switch(cmd)
+				if(id == 111)
 				{
-				case CAN_PACKET_STATUS_4:
-						info.temp_fet = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &indexbuf);
-						info.temp_motor = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &indexbuf);
-						info.current_in = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &indexbuf);
-						info.pos = buffer_get_float16((uint8_t*)&vescmsg.Data, 50, &indexbuf);
-						break;
+					vesc1.Info.rpm = buffer_get_float32((uint8_t*)&vescmsg.Data, 1.0, &ind);
+					vesc1.Info.current = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &ind);
+					vesc1.Info.duty = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &ind);
+				}
+				else if(id == 112)
+				{
+					vesc2.Info.rpm = buffer_get_float32((uint8_t*)&vescmsg.Data, 1.0, &ind);
+					vesc2.Info.current = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &ind);
+					vesc2.Info.duty = buffer_get_float16((uint8_t*)&vescmsg.Data, 1e1, &ind);
 				}
 			}
-//		}
-//	}
-}
+		}
+	}
 
 Vescmsg *get_rx_frame(void) {
 	if (rx_frame_read != rx_frame_write){
