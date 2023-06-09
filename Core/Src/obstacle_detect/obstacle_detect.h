@@ -99,7 +99,7 @@ typedef struct
 	// Counters for pose and angle
 	int pos_counter, angle_counter;
 
-	int AdjEnb;
+	int AdjEnb, fail;
 
 	union{
 		uint16_t flags;

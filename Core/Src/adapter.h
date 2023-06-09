@@ -204,7 +204,7 @@ int picked_left, picked_right, loaded, servo_close_once, stick_fence;
 int tune_p, tune_i, tune_d, wheel;
 int led_enb, before_shot, shot_prd;
 int pick_0, picked_manual, pick_left_manual, load_adjust, adjust_count, up_done, type_3_done, blue;
-int start_flywheel, cylinder_load_once;
+int start_flywheel, cylinder_load_once, must_load, servo_enb, stop_adjust;
 
 
 float fXEncData, fYEncData;
@@ -218,7 +218,7 @@ float leftErr, leftU;
 float rightErr, rightU;
 float vesc_speed;
 extern float pickVG[7], flywheelVG[7];
-int32_t pick_enc, pick_tol, pick_target_enc, pick_enc_buf;
+int32_t pick_enc, pick_tol, pick_target_enc, pick_enc_buf, RedPickLess, BluePickLess, RedPickMore, BluePickMore;
 
 
 

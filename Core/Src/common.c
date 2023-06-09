@@ -116,13 +116,16 @@ void RobotStart()
 	picked_right = 0;
 	cylinder_retract;
 	set_pick_enc = 0;
+	stop_adjust = 0;
 	up_done = 0;
+	servo_enb = 0;
 	pick_tol = 100;
 	vel_adjust = 0;
 	reload = 0;
 	load_stop_once = 0;
 	load_start = 0;
 	wait_load = 0;
+	must_load = 0;
 	wheel = 1;
 	loaded = 0;
 	led_enb = 0;
@@ -135,6 +138,12 @@ void RobotStart()
 	type_3_done = 0;
 	pick_0 = 0;
 	cylinder_load_once = 0;
+
+	// Parameters
+	RedPickLess = 150;
+	BluePickLess = 150;
+	RedPickMore = 0;
+	BluePickMore = 0;
 }
 
 void NormalControl()
@@ -277,6 +286,7 @@ void NormalControl()
 			close_servo;
 			counter = 0;
 		}
+//		LidarSendIns(NEAR, &lidar);
 	}
 
 	if(ps4.button == LEFT)
@@ -441,8 +451,9 @@ void Auto() {
 		while(ps4.button == CROSS);
 		push_shoot;
 		shoot_start = 1;
+		stop_adjust = 1;
 		wait_load = 1;
-		cylinder_load_once = 1; // Only allow cylinder to load once every shot
+//		cylinder_load_once = 1; // Only allow cylinder to load once every shot
 //		static int counter = 0;
 //		counter++;
 //
@@ -474,6 +485,7 @@ void Auto() {
 			loaded = 0;
 			vesc_duty = 0.0;
 			flywheelStop();
+			pick_stop;
 			setPick(500);
 			cylinder_load;
 			open_servo;
@@ -526,11 +538,12 @@ void Auto() {
 	{
 		while(ps4.button == TRIANGLE);
 		LoadRing();
+		load_adjust = 1;
 		picked_manual = 1;
 		adjust_servo;
-		load_adjust = 1;
 		cylinder_retract;
 		AdjustRings();
+		adjust_servo;
 	}
 
 	if (HAL_GetTick() - before >= AutoMode)
@@ -695,22 +708,10 @@ void CheckPick()
 				}
 			}
 			LoadRing();
-			close_servo;
-			load_adjust = 1;
 			lidar.pos_counter = CENTER_1;
-			for(int i = 0; i < 4; i++)
-			{
-				if(ps4.button == SQUARE)
-				{
-					while(ps4.button == SQUARE);
-					break;
-				}
-
-				load_adjust_servo;
-				osDelay(100);
-				close_servo;
-				osDelay(100);
-			}
+			load_adjust = 1;
+			AdjustRings();
+//			adjust_servo;
 //			osDelay(500);
 			setSpeedMODN(5.5);
 		}
@@ -768,13 +769,12 @@ void CheckPick()
 		if(picked_right)
 		{
 //			LoadRing()
-			if(type_3_done)
+			if(!type_3_done)
 				lidar.pos_counter = CENTER_4;
 			else
 				lidar.pos_counter = UPPER_RIGHT;
 //			osDelay(500);
 //			close_servo;
-			load_adjust = 1;
 			setSpeedMODN(5.5);
 		}
 	}
@@ -812,14 +812,24 @@ void CheckShoot()
 		push_stop;
 		adjust_servo;
 		reload = 1;
-		pick_manual(5000);
+		pick_manual(4000);
+		must_load = 1;
 //		AutoLoadRing();
 	}
 	else if(shoot_done && In_ShotReady)
 	{
 		shoot_done = 0;
 		push_stop;
+		if(wait_load)
+		{
+			reload = 1;
+			pick_manual(4000);
+			wait_load = 0;
+		}
 	}
+
+//	if(In_ShotReady && !shoot_start)
+//		push_stop;
 }
 
 void CheckLoad()
@@ -837,11 +847,12 @@ void CheckLoad()
 
 	if(load_start || reload)
 	{
-		if(pick_enc >= 9500 && !load_stop_once)
+		if(pick_enc >= 10000 && !load_stop_once)
 		{
 			pick_stop;
 			osDelay(200);
-			pick_manual(5000);
+			pick_manual(4000);
+			adjust_servo;
 //			close_servo;
 			load_stop_once = 1;
 		}
@@ -854,52 +865,83 @@ void CheckLoad()
 		}
 	}
 
-	if(load_start && In_Load && pick_enc >= 8500)
+	if(load_start && In_Load && pick_enc >= 8000)
 	{
 		load_start = 0;
 		pick_enc_buf = pick_enc;
+//		pick_tol = 10;
+//		adjust_servo;
+
+//		if(blue)
+//		{
+//			while(abs(pick_enc - pick_enc_buf) < BluePickMore)
+//				pick_manual(2500);
+//		}
+//		else
+//		{
+//			while(abs(pick_enc - pick_enc_buf) < RedPickMore)
+//				pick_manual(2500);
+//		}
+
 		if(blue)
 		{
-			while(pick_enc - pick_enc_buf < BluePickMore)
-				pick_manual(2000);
+			while(abs(pick_enc_buf - pick_enc) < BluePickLess)
+				pick_manual(-2500);
 		}
 		else
 		{
-			while(pick_enc - pick_enc_buf < RedPickMore)
-				pick_manual(2000);
+			while(abs(pick_enc_buf - pick_enc) < RedPickLess)
+				pick_manual(-2500);
 		}
 
+		pick_tol = 100;
 		pick_stop;
-		AutoLoadRing();
+
+		if(mode == AUTO)
+			AutoLoadRing();
 	}
 
 	if(reload && In_Load)
 	{
 		pick_enc_buf = pick_enc;
+		pick_tol = 10;
+//		adjust_servo;
+
+//		if(blue)
+//		{
+//			while(abs(pick_enc - pick_enc_buf) < BluePickMore)
+//				pick_manual(2500);
+//		}
+//		else
+//		{
+//			while(abs(pick_enc - pick_enc_buf) < RedPickMore)
+//				pick_manual(2500);
+//		}
 
 		if(blue)
 		{
-			while(pick_enc - pick_enc_buf < BluePickMore)
-				pick_manual(2000);
+			while(abs(pick_enc_buf - pick_enc) < BluePickLess)
+				pick_manual(-2500);
 		}
 		else
 		{
-			while(pick_enc - pick_enc_buf < RedPickMore)
-				pick_manual(2000);
+			while(abs(pick_enc_buf - pick_enc) < RedPickLess)
+				pick_manual(-2500);
 		}
+//		pick_tol = 100;
 		reload = 0;
+		must_load = 0;
 		pick_stop;
-		AutoLoadRing();
+
+		if(mode == AUTO)
+			AutoLoadRing();
 	}
 
-	if(reload)
-		pick_manual(5000);
-
-	if(loaded >= 7)
-	{
-		adjust_servo;
-		load_adjust = 0;
-	}
+//	if(loaded >= 6)
+//	{
+//		adjust_servo;
+//		load_adjust = 0;
+//	}
 
 //	if(loaded >= 8)
 //	{
@@ -962,19 +1004,7 @@ void AdjustRings(void)
 {
 	if(load_adjust)
 	{
-		for(int i = 0; i < 4; i++)
-		{
-			if(ps4.button == SQUARE)
-			{
-				while(ps4.button == SQUARE);
-				break;
-			}
-
-			load_adjust_servo;
-			osDelay(100);
-			close_servo;
-			osDelay(100);
-		}
+		servo_enb = 1;
 	}
 }
 
@@ -1025,17 +1055,22 @@ void tune(void)
 	if(ps4.button == UP)
 	{
 		while(ps4.button == UP);
-		tune_p = 1;
-		tune_i = 0;
-		tune_d = 0;
+//		tune_p = 1;
+//		tune_i = 0;
+//		tune_d = 0;
+		if(blue)
+			BluePickLess = pick_enc_buf - pick_enc;
+		else
+			RedPickLess = pick_enc_buf - pick_enc;
 	}
 
 	if(ps4.button == DOWN)
 	{
 		while(ps4.button == DOWN);
-		tune_p = 0;
-		tune_i = 1;
-		tune_d = 0;
+		if(blue)
+			BluePickMore = pick_enc - pick_enc_buf;
+		else
+			RedPickMore = pick_enc - pick_enc_buf;
 	}
 
 	if(ps4.button == LEFT)
@@ -1112,25 +1147,50 @@ void tune(void)
 	if(ps4.button == OPTION)
 	{
 		while(ps4.button == OPTION);
-		switch(wheel)
-		{
-		case 1:
-			RNSSet(&rns, RNS_F_LEFT_VEL_PID, AP, AI, AD);
-			break;
+//		switch(wheel)
+//		{
+//		case 1:
+//			RNSSet(&rns, RNS_F_LEFT_VEL_PID, AP, AI, AD);
+//			break;
+//
+//		case 2:
+//			RNSSet(&rns, RNS_F_RIGHT_VEL_PID, BP, BI, BD);
+//			break;
+//
+//		case 3:
+//			RNSSet(&rns, RNS_B_LEFT_VEL_PID, CP, CI, CD);
+//			break;
+//
+//		case 4:
+//			RNSSet(&rns, RNS_B_RIGHT_VEL_PID, DP, DI, DD);
+//			break;
+//		}
 
-		case 2:
-			RNSSet(&rns, RNS_F_RIGHT_VEL_PID, BP, BI, BD);
-			break;
-
-		case 3:
-			RNSSet(&rns, RNS_B_LEFT_VEL_PID, CP, CI, CD);
-			break;
-
-		case 4:
-			RNSSet(&rns, RNS_B_RIGHT_VEL_PID, DP, DI, DD);
-			break;
-		}
+//		if(blue)
+//			BluePickLess = pick_enc_buf - pick_enc;
+//		else
+//			RedPickLess = pick_enc_buf - pick_enc;
 	}
+
+	if(ps4.button == TRIANGLE)
+	{
+		while(ps4.button == TRIANGLE);
+
+		LoadRing();
+		load_adjust = 1;
+		picked_manual = 1;
+		adjust_servo;
+		cylinder_retract;
+		AdjustRings();
+		adjust_servo;
+	}
+
+	if(ps4.button == CROSS)
+	{
+		while(ps4.button == CROSS);
+	}
+
+	led9 = 1;
 }
 
 void flywheelPID(float speed)

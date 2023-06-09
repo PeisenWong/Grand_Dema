@@ -26,8 +26,8 @@
 #define NormalMode 500
 #define AutoMode 125
 #define PoleSpeed 6.5
-#define BluePickMore 180
-#define RedPickMore 154
+//#define BluePickMore 0
+//#define RedPickMore 0
 
 // Speed
 #define type1 4.7
@@ -39,13 +39,13 @@
 #define BlueOppoType2 12.3
 
 // Duty
-#define type1Duty 0.17
-#define BlueType2Duty 0.275
-#define RedType2Duty 0.27
-#define BlueType3Duty 0.375
-#define RedType3Duty  0.375
-#define BlueOppoType2Duty  0.39
-#define RedOppoType2Duty   0.39
+#define type1Duty 0.1675
+#define BlueType2Duty 0.2725
+#define RedType2Duty 0.265
+#define BlueType3Duty 0.3725
+#define RedType3Duty  0.37
+#define BlueOppoType2Duty  0.3875
+#define RedOppoType2Duty   0.385
 
 #define SAMPLE_TIME 0.005f
 
@@ -74,8 +74,8 @@
 #define IP21	HAL_GPIO_ReadPin(IP21_Analog6_PIN)
 
 // Sensors
-#define In_Pick			IP1 == 0
-#define In_Load			IP2 == 0
+#define In_Pick			IP1 == 1
+#define In_Load			IP2 == 1
 #define In_ShotReady 	IP3 == 0
 #define In_ShotDone		IP4 == 0
 #define In_Pitch45		IP5 == 0

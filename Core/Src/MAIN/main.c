@@ -35,7 +35,7 @@ int main(void) {
 					(osPriority_t) osPriorityNormal, };
 
 	const osThreadAttr_t NaviTask_attributes =
-			{ .name = "NaviTask", .stack_size = 1024 * 4, .priority =
+			{ .name = "NaviTask", .stack_size = 512 * 4, .priority =
 					(osPriority_t) osPriorityNormal, };
 
 	const osThreadAttr_t EmergencyTask_attributes =
@@ -97,8 +97,8 @@ void TIM6_DAC_IRQHandler(void) {
 //	//		sprintf((char*)debug, "VESC: %f\n", vesc_duty);
 //		}
 
-		sprintf((char*) debug, "X: %.2f Y: %.2f Yaw: %.2f VESC: %.4f P: %ld\n",
-				pp.real_x, pp.real_y, pp.real_z, vesc_duty, pick_enc);
+		sprintf((char*) debug, "X: %.2f Y: %.2f Yaw: %.2f VESC: %.4f P: %ld S: %ld RM: %ld, BM: %ld RL: %ld, BL: %ld\n",
+				pp.real_x, pp.real_y, pp.real_z, vesc_duty, pick_enc, servo_ring.currentPulse, RedPickMore, BluePickMore, RedPickLess, BluePickLess);
 //		sprintf((char*) debug, "Left: %.2f Right: %.2f VESC: %.2f\n",
 //				vesc1.vel, vesc2.vel, vesc_speed);
 		HAL_UART_Transmit(&huart5, debug, strlen((char*) debug), HAL_MAX_DELAY);
@@ -285,14 +285,14 @@ void CheckingTask(void *argument)
 			led6_off;
 		}
 
-//		if(In_Pick)
-//		{
-//			led7_on;
-//		}
-//		else
-//		{
-//			led7_off;
-//		}
+		if(In_Pick)
+		{
+			led7_on;
+		}
+		else
+		{
+			led7_off;
+		}
 
 		if(led_enb)
 		{
@@ -309,7 +309,39 @@ void EmergencyTask(void *argument) {
 
 	while (1) {
 
+		if(servo_enb)
+		{
+			for(int i = 0; i < 4; i++)
+			{
+				if(ps4.button == SQUARE)
+				{
+					while(ps4.button == SQUARE);
+					break;
+				}
+
+				load_adjust_servo;
+				osDelay(100);
+				close_servo;
+				osDelay(100);
+
+//				if(stop_adjust)
+//				{
+//					stop_adjust = 0;
+//					break;
+//				}
+
+	//			if(In_ShotDone)
+	//			{
+	//				adjust_servo;
+	//				break;
+	//			}
+			}
+			adjust_servo;
+			servo_enb = 0;
+		}
+
 		if (ps4.button == TOUCH) {
+			while(ps4.button == TOUCH);
 //			led3 = 1;
 			RNSStop(&rns);
 			PP_stop(&pp);
